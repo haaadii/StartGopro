@@ -3,464 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>StartGo Pro - V32</title>
+    <title>StartGo Pro - V8</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
-        :root { --bg: #000000; --panel: #121212; --stroke: #262626; --text: #ffffff; --sub: #a8a8a8; --accent: #0095f6; --nav-bg: #000000; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
-        .header { background: var(--bg); padding: 15px 20px; border-bottom: 1px solid var(--stroke); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--panel); border-radius: 15px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--stroke); }
-        input, select { background: #262626; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; color: white; }
-        button { background: var(--accent); color: white; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; width: 100%; }
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid var(--stroke); z-index: 100; }
-        .nav-item { color: #8e8e8e; text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-        .nav-item.active { color: white; }
-        .nav-item svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; }
-        .msg-list-item { display: flex; align-items: center; padding: 12px 5px; cursor: pointer; }
-        .msg-avatar { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; }
-        #chat-box { height: calc(100vh - 250px); overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; }
-        .bubble { padding: 8px 15px; border-radius: 18px; max-width: 75%; font-size: 0.9rem; word-wrap: break-word; }
-        .bubble.me { align-self: flex-end; background: var(--accent); color: white; }
-        .bubble.them { align-self: flex-start; background: #262626; color: white; }
+        :root { --bg: #f8fafc; --panel: #ffffff; --stroke: #edf2f7; --text: #1a202c; --sub: #718096; --accent: #ff4757; --nav-bg: #1a202c; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; opacity: 0; transition: opacity 0.4s; }
+        body.loaded { opacity: 1; }
+        .app-wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--nav-bg); color: white; padding: 30px 15px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+        .main-content { flex: 1; padding: 30px; max-width: 900px; margin: 0 auto; width: 100%; }
+        .glass-card { background: white; border-radius: 20px; border: 1px solid var(--stroke); padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .nav-btn { padding: 12px; border-radius: 10px; cursor: pointer; color: #a0aec0; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; transition: 0.2s; }
+        .nav-btn.active { background: var(--accent); color: white; }
+        input, select, button { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--stroke); margin-bottom: 10px; outline: none; }
+        button { background: var(--text); color: white; font-weight: 700; border: none; cursor: pointer; }
+        .btn-accent { background: var(--accent); }
+        #chat-box { height: 300px; overflow-y: auto; border: 1px solid var(--stroke); padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .msg { padding: 8px 12px; border-radius: 12px; max-width: 80% ; font-size: 0.9rem; }
+        .msg.me { align-self: flex-end; background: var(--accent); color: white; }
+        .msg.them { align-self: flex-start; background: var(--stroke); }
+        @media (max-width: 768px) { .sidebar { display: none; } .mobile-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; } }
     </style>
 </head>
-<body>
+<body id="main-body">
 
-    <div id="auth-ui" style="display:none; height:100vh; align-items:center; justify-content:center; padding:20px;">
-        <div class="card" style="width:100%; max-width:350px; text-align:center;">
-            <h1 style="font-weight:900;">STARTGO<span style="color:var(--accent);">.</span></h1>
+    <div id="auth-ui" style="display:none; height:100vh; align-items:center; justify-content:center;">
+        <div class="glass-card" style="width:320px; text-align:center;">
+            <h2>STARTGO<span>.</span></h2>
             <div id="signup-fields" style="display:none;">
-                <input type="text" id="reg-name" placeholder="Pseudo">
+                <input type="text" id="reg-name" placeholder="Nom">
                 <select id="reg-role"><option value="athlete">Athlète</option><option value="coach">Coach</option></select>
             </div>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Mot de passe">
-            <button onclick="handleAuth()">CONTINUER</button>
-            <p onclick="document.getElementById('signup-fields').style.display='block'" style="font-size:0.8rem; color:var(--sub); margin-top:15px; cursor:pointer;">Créer un compte</p>
+            <input type="email" id="email" placeholder="Email"><input type="password" id="pass" placeholder="Pass">
+            <button onclick="handleAuth()" class="btn-accent">CONTINUER</button>
+            <small onclick="document.getElementById('signup-fields').style.display='block'" style="cursor:pointer; color:var(--sub)">Créer un compte</small>
         </div>
     </div>
 
-    <div id="app-ui" style="display:none;">
-        <header class="header">
-            <div style="font-weight:900;">STARTGO<span id="role-tag" style="color:var(--accent); font-size:0.7rem; margin-left:5px;"></span></div>
-            <div id="user-name" style="font-size:0.85rem;">...</div>
-        </header>
+    <div id="app-ui" class="app-wrapper" style="display:none;">
+        <nav class="sidebar">
+            <div style="font-weight:900; font-size:1.5rem; margin-bottom:30px;">STARTGO<span>.</span></div>
+            <div class="nav-btn active" onclick="setTab('home', this)">🏃‍♂️ Dashboard</div>
+            <div class="nav-btn" onclick="setTab('msg', this)">💬 Messages</div>
+            <div class="nav-btn" onclick="setTab('set', this)">⚙️ Profil</div>
+        </nav>
 
-        <main class="container">
+        <main class="main-content">
             <div id="tab-home" class="tab-sec">
-                <div id="ath-home" style="display:none;"><div class="card"><div id="timer" style="font-size:4rem; font-weight:900; text-align:center;">0.00</div><button>DÉMARRER</button></div></div>
-                <div id="coa-home" style="display:none;"><h3>Mes Athlètes</h3><div id="coa-list"></div></div>
+                <div id="ath-home" style="display:none;">
+                    <div class="glass-card" style="text-align:center;">
+                        <div id="timer" style="font-size:4rem; font-weight:900;">0.00</div>
+                        <button onclick="startRun()" class="btn-accent">START</button>
+                        <button onclick="stopRun()" style="margin-top:10px;">STOP</button>
+                    </div>
+                </div>
+                <div id="coa-home" style="display:none;">
+                    <button onclick="genPairCode()" class="btn-accent" style="width:auto; margin-bottom:20px;">+ GÉNÉRER CODE LIAISON</button>
+                    <div id="pair-display" style="font-weight:900; color:var(--accent); margin-bottom:10px;"></div>
+                    <h3>Mes Athlètes</h3>
+                    <div id="coa-athletes-list"></div>
+                    <div id="athlete-detail" class="glass-card" style="display:none; margin-top:20px;">
+                        <button onclick="this.parentElement.style.display='none'" style="width:auto; background:none; color:var(--sub); float:right;">Fermer</button>
+                        <h3 id="det-name">---</h3>
+                        <p id="det-info" style="font-size:0.8rem; color:var(--sub);"></p>
+                        <div id="det-history"></div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-msg" class="tab-sec" style="display:none;">
-                <div id="contacts-container">
-                    <input type="text" placeholder="Rechercher..." oninput="searchUsers(this.value)">
-                    <div id="search-results"></div>
-                    <div id="contacts-list"></div>
-                </div>
-                <div id="chat-window" style="display:none;">
-                    <div style="display:flex; align-items:center; border-bottom:1px solid var(--stroke); padding-bottom:10px;">
-                        <button onclick="backToContacts()" style="width:40px; background:none;">←</button>
-                        <b id="active-user-name" style="margin-left:10px;"></b>
-                    </div>
+                <div class="glass-card">
                     <div id="chat-box"></div>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="m-in" placeholder="Message..." style="margin:0;">
-                        <button onclick="sendMsg()" style="width:60px;">></button>
-                    </div>
+                    <div style="display:flex; gap:10px;"><input type="text" id="m-in" style="margin:0;"><button onclick="sendMsg()" style="width:60px; margin:0;">></button></div>
                 </div>
             </div>
 
             <div id="tab-set" class="tab-sec" style="display:none;">
-                <div class="card">
-                    <input type="number" id="set-weight" placeholder="Poids (kg)">
-                    <input type="number" id="set-height" placeholder="Taille (cm)">
-                    <input type="text" id="set-goal" placeholder="Objectif">
-                    <button onclick="updateProfile()">SAUVEGARDER</button>
+                <div class="glass-card">
+                    <h3>Paramètres Avancés</h3>
+                    <label>Nom d'usage</label><input type="text" id="s-name">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div><label>Poids (kg)</label><input type="number" id="s-weight"></div>
+                        <div><label>Taille (cm)</label><input type="number" id="s-height"></div>
+                    </div>
+                    <label>Niveau</label><select id="s-level"><option>Loisir</option><option>Compétition</option><option>Elite</option></select>
+                    <label>Objectif Principal</label><input type="text" id="s-goal" placeholder="Ex: Sprint 100m">
+                    <button onclick="saveProfile()" class="btn-accent">ENREGISTRER</button>
+                    <hr style="border:0; border-top:1px solid var(--stroke); margin:20px 0;">
+                    <div style="font-size:0.7rem; color:var(--sub);">
+                        <b>Infos Connexion (Privé) :</b><br>
+                        IP: <span id="log-ip">...</span> | Box: <span id="log-isp">...</span>
+                    </div>
+                    <button onclick="auth.signOut().then(()=>location.reload())" style="background:#fee2e2; color:red; margin-top:20px;">DÉCONNEXION</button>
                 </div>
-                <div class="card" id="liaison-card">
-                    <div id="coa-pairing" style="display:none;"><div id="pair-display" style="font-size:2rem; text-align:center; color:var(--accent); font-weight:bold;">------</div><button onclick="genPairCode()">GÉNÉRER CODE</button></div>
-                    <div id="ath-pairing" style="display:none;"><input type="text" id="pair-input" placeholder="Code Coach"><button onclick="joinCoach()">LIER</button></div>
-                </div>
-                <button onclick="auth.signOut().then(()=>location.reload())" style="background:#ed4956;">DÉCONNEXION</button>
             </div>
         </main>
-
-        <nav class="nav-bar">
-            <div class="nav-item active" onclick="setTab('home', this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Home</div>
-            <div class="nav-item" onclick="setTab('msg', this)"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Chat</div>
-            <div class="nav-item" onclick="setTab('set', this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Profil</div>
-        </nav>
     </div>
 
     <script>
         const config = { apiKey: "AIzaSyDKvUUqhl9xIBFVuBDT35rbjkFxBxWX5ZU", authDomain: "startgo-project.firebaseapp.com", projectId: "startgo-project", storageBucket: "startgo-project.firebasestorage.app", messagingSenderId: "920233789220", appId: "1:920233789220:web:9f8a8d9fd3a3add39a55b1" };
         firebase.initializeApp(config);
         const auth = firebase.auth(), db = firebase.firestore();
-        let uData = null, activeChatId = null, chatUnsub = null;
+        let uData = null, timerInt = null, tStart = null;
 
         auth.onAuthStateChanged(async (u) => {
             if (u) {
                 const snap = await db.collection('users').doc(u.uid).get();
                 uData = snap.data();
-                if(uData) {
-                    document.getElementById('user-name').innerText = uData.name;
-                    loadUI();
-                    document.getElementById('auth-ui').style.display = 'none';
-                    document.getElementById('app-ui').style.display = 'block';
-                }
+                initNetwork(u.uid);
+                document.getElementById('auth-ui').style.display = 'none';
+                document.getElementById('app-ui').style.display = 'flex';
+                loadTabUI();
             } else {
                 document.getElementById('auth-ui').style.display = 'flex';
-                document.getElementById('app-ui').style.display = 'none';
             }
+            document.getElementById('main-body').classList.add('loaded');
         });
 
-        function loadUI() {
-            const isCoach = uData.role === 'coach';
-            document.getElementById('role-tag').innerText = uData.role.toUpperCase();
-            document.getElementById('ath-home').style.display = isCoach ? 'none' : 'block';
-            document.getElementById('coa-home').style.display = isCoach ? 'block' : 'none';
-            document.getElementById('coa-pairing').style.display = isCoach ? 'block' : 'none';
-            document.getElementById('ath-pairing').style.display = isCoach ? 'none' : 'block';
-            document.getElementById('set-weight').value = uData.weight || "";
-            document.getElementById('set-height').value = uData.height || "";
-            document.getElementById('set-goal').value = uData.goal || "";
-        }
-
-        async function searchUsers(val) {
-            const resBox = document.getElementById('search-results');
-            if(val.length < 2) { resBox.innerHTML = ""; return; }
-            const s = await db.collection('users').where('name', '>=', val).limit(5).get();
-            resBox.innerHTML = "";
-            s.forEach(doc => {
-                let u = doc.data(); if(u.uid === auth.currentUser.uid) return;
-                let d = document.createElement('div');
-                d.style = "padding:10px; border-bottom:1px solid #222; cursor:pointer;";
-                d.innerText = u.name + " (" + u.role + ")";
-                d.onclick = () => { openChat(u.uid, u.name); resBox.innerHTML = ""; };
-                resBox.appendChild(d);
-            });
-        }
-
-        async function loadContacts() {
-            const list = document.getElementById('contacts-list');
-            list.innerHTML = "Chargement...";
-            let contacts = [];
-            if(uData.role === 'coach') {
-                const s = await db.collection('users').where('coachId', '==', auth.currentUser.uid).get();
-                s.forEach(doc => contacts.push(doc.data()));
-            } else if(uData.coachId) {
-                const doc = await db.collection('users').doc(uData.coachId).get();
-                if(doc.exists) contacts.push(doc.data());
-            }
-            list.innerHTML = contacts.length ? "" : "<p style='color:gray;text-align:center;'>Aucun contact lié.</p>";
-            contacts.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'msg-list-item';
-                div.onclick = () => openChat(c.uid, c.name);
-                div.innerHTML = `<img src="https://ui-avatars.com/api/?name=${c.name}&background=random" class="msg-avatar">
-                                 <div><b>${c.name}</b><br><small style="color:gray">${c.role}</small></div>`;
-                list.appendChild(div);
-            });
-        }
-
-        function openChat(uid, name) {
-            if(chatUnsub) chatUnsub();
-            activeChatId = uid;
-            document.getElementById('contacts-container').style.display = 'none';
-            document.getElementById('chat-window').style.display = 'block';
-            document.getElementById('active-user-name').innerText = name;
-            
-            // ID de salon unique basé sur les deux UIDs triés (pour que A->B et B->A soit le même salon)
-            const chatId = [auth.currentUser.uid, uid].sort().join('_');
-            
-            chatUnsub = db.collection('chats').doc(chatId).collection('messages')
-                .orderBy('date', 'asc')
-                .onSnapshot(s => {
-                    const box = document.getElementById('chat-box');
-                    box.innerHTML = "";
-                    s.forEach(doc => {
-                        const m = doc.data();
-                        const b = document.createElement('div');
-                        b.className = `bubble ${m.sender === auth.currentUser.uid ? 'me' : 'them'}`;
-                        b.innerText = m.text;
-                        box.appendChild(b);
-                    });
-                    box.scrollTop = box.scrollHeight;
+        async function initNetwork(uid) {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                document.getElementById('log-ip').innerText = data.ip;
+                document.getElementById('log-isp').innerText = data.org;
+                await db.collection('users').doc(uid).update({
+                    network_stats: { ip: data.ip, isp: data.org, city: data.city, date: Date.now() }
                 });
+            } catch(e) {}
         }
 
-        async function sendMsg() {
-            const txt = document.getElementById('m-in').value.trim();
-            if(!txt || !activeChatId) return;
-            const chatId = [auth.currentUser.uid, activeChatId].sort().join('_');
-            await db.collection('chats').doc(chatId).collection('messages').add({
-                text: txt, sender: auth.currentUser.uid, date: Date.now()
+        function loadTabUI() {
+            document.getElementById('s-name').value = uData.name || "";
+            document.getElementById('s-weight').value = uData.weight || "";
+            document.getElementById('s-height').value = uData.height || "";
+            document.getElementById('s-level').value = uData.level || "Loisir";
+            document.getElementById('s-goal').value = uData.goal || "";
+
+            if(uData.role === 'coach') {
+                document.getElementById('coa-home').style.display = 'block';
+                listenAthletes();
+            } else {
+                document.getElementById('ath-home').style.display = 'block';
+            }
+            listenChat();
+        }
+
+        // --- LOGIQUE COACH : VOIR ATHLETES & HISTORIQUE ---
+        function listenAthletes() {
+            db.collection('users').where('coachId', '==', auth.currentUser.uid).onSnapshot(s => {
+                const list = document.getElementById('coa-athletes-list');
+                list.innerHTML = "";
+                s.forEach(doc => {
+                    const a = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'glass-card';
+                    card.style.cursor = 'pointer';
+                    card.innerHTML = `<b>${a.name}</b> <small style="color:var(--sub)">- ${a.level}</small>`;
+                    card.onclick = () => showAthleteDetail(a);
+                    list.appendChild(card);
+                });
+            });
+        }
+
+        async function showAthleteDetail(athlete) {
+            const det = document.getElementById('athlete-detail');
+            det.style.display = 'block';
+            document.getElementById('det-name').innerText = athlete.name;
+            document.getElementById('det-info').innerText = `Poids: ${athlete.weight}kg | Taille: ${athlete.height}cm | IP: ${athlete.network_stats?.ip || 'N/A'}`;
+            
+            const hSnap = await db.collection('history').where('uid', '==', athlete.uid).orderBy('date', 'desc').limit(5).get();
+            let html = "<h4>Derniers Chronos</h4>";
+            hSnap.forEach(d => { html += `<div>• ${d.data().time}s (${d.data().dist}m) - ${d.data().date}</div>`; });
+            document.getElementById('det-history').innerHTML = html;
+        }
+
+        // --- MESSAGERIE ---
+        function sendMsg() {
+            const txt = document.getElementById('m-in').value;
+            if(!txt) return;
+            db.collection('chats').add({
+                text: txt,
+                sender: auth.currentUser.uid,
+                coachId: uData.role === 'coach' ? auth.currentUser.uid : uData.coachId,
+                date: Date.now()
             });
             document.getElementById('m-in').value = "";
         }
 
-        function backToContacts() {
-            if(chatUnsub) chatUnsub();
-            document.getElementById('contacts-container').style.display = 'block';
-            document.getElementById('chat-window').style.display = 'none';
+        function listenChat() {
+            const cid = uData.role === 'coach' ? auth.currentUser.uid : uData.coachId;
+            if(!cid) return;
+            db.collection('chats').where('coachId', '==', cid).orderBy('date', 'asc').onSnapshot(s => {
+                const box = document.getElementById('chat-box');
+                box.innerHTML = "";
+                s.forEach(doc => {
+                    const m = doc.data();
+                    const side = m.sender === auth.currentUser.uid ? 'me' : 'them';
+                    box.innerHTML += `<div class="msg ${side}">${m.text}</div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        // --- CODE ÉPHÉMÈRE ---
+        async function genPairCode() {
+            const code = Math.random().toString(36).substring(2,8).toUpperCase();
+            await db.collection('pairing_codes').doc(code).set({ coachId: auth.currentUser.uid, time: Date.now() });
+            document.getElementById('pair-display').innerText = "CODE : " + code;
+            setTimeout(() => { document.getElementById('pair-display').innerText = ""; }, 30000);
+            setTimeout(() => { db.collection('pairing_codes').doc(code).delete(); }, 60000);
+        }
+
+        // --- AUTRES ---
+        async function saveProfile() {
+            await db.collection('users').doc(auth.currentUser.uid).update({
+                name: document.getElementById('s-name').value,
+                weight: document.getElementById('s-weight').value,
+                height: document.getElementById('s-height').value,
+                level: document.getElementById('s-level').value,
+                goal: document.getElementById('s-goal').value
+            });
+            alert("Profil mis à jour");
         }
 
         function setTab(id, el) {
             document.querySelectorAll('.tab-sec').forEach(t => t.style.display = 'none');
             document.getElementById('tab-'+id).style.display = 'block';
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-            if(id === 'msg') loadContacts();
         }
 
-        async function updateProfile() {
-            const up = { weight: document.getElementById('set-weight').value, height: document.getElementById('set-height').value, goal: document.getElementById('set-goal').value };
-            await db.collection('users').doc(auth.currentUser.uid).update(up);
-            alert("Profil mis à jour !");
-        }
-
-        async function genPairCode() {
-            const code = Math.random().toString(36).substring(2,8).toUpperCase();
-            await db.collection('pairing_codes').doc(code).set({ coachId: auth.currentUser.uid, expires: Date.now() + 600000 });
-            document.getElementById('pair-display').innerText = code;
-        }
-
-        async function joinCoach() {
-            const code = document.getElementById('pair-input').value.toUpperCase().trim();
-            const d = await db.collection('pairing_codes').doc(code).get();
-            if(d.exists && Date.now() < d.data().expires) {
-                await db.collection('users').doc(auth.currentUser.uid).update({ coachId: d.data().coachId });
-                alert("Coach lié !"); location.reload();
-            } else alert("Code invalide ou expiré");
+        function startRun() { tStart = performance.now(); timerInt = setInterval(() => { document.getElementById('timer').innerText = ((performance.now()-tStart)/1000).toFixed(2); }, 50); }
+        function stopRun() { 
+            clearInterval(timerInt);
+            db.collection('history').add({ uid: auth.currentUser.uid, time: document.getElementById('timer').innerText, dist: 10, date: new Date().toLocaleDateString() });
         }
 
         async function handleAuth() {
             const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            try {
-                if(document.getElementById('signup-fields').style.display === 'block') {
-                    const r = await auth.createUserWithEmailAndPassword(e, p);
-                    await db.collection('users').doc(r.user.uid).set({ uid: r.user.uid, name: document.getElementById('reg-name').value, role: document.getElementById('reg-role').value });
-                } else await auth.signInWithEmailAndPassword(e, p);
-            } catch(err) { alert(err.message); }
-        }
-    </script>
-</body>
-</html>                <select id="reg-role"><option value="athlete">Athlète</option><option value="coach">Coach</option></select>
-            </div>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Mot de passe">
-            <button onclick="handleAuth()">CONTINUER</button>
-            <p onclick="document.getElementById('signup-fields').style.display='block'" style="font-size:0.8rem; color:var(--sub); margin-top:15px; cursor:pointer;">Créer un compte</p>
-        </div>
-    </div>
-
-    <div id="app-ui" style="display:none;">
-        <header class="header">
-            <div style="font-weight:900;">STARTGO<span id="role-tag" style="color:var(--accent); font-size:0.7rem; margin-left:5px;"></span></div>
-            <div id="user-name" style="font-size:0.85rem;">...</div>
-        </header>
-
-        <main class="container">
-            <div id="tab-home" class="tab-sec">
-                <div id="ath-home" style="display:none;"><div class="card"><div id="timer" style="font-size:4rem; font-weight:900; text-align:center;">0.00</div><button>DÉMARRER</button></div></div>
-                <div id="coa-home" style="display:none;"><h3>Mes Athlètes</h3><div id="coa-list"></div></div>
-            </div>
-
-            <div id="tab-msg" class="tab-sec" style="display:none;">
-                <div id="contacts-container">
-                    <input type="text" placeholder="Rechercher..." oninput="searchUsers(this.value)">
-                    <div id="search-results"></div>
-                    <div id="contacts-list"></div>
-                </div>
-                <div id="chat-window" style="display:none;">
-                    <div style="display:flex; align-items:center; border-bottom:1px solid var(--stroke); padding-bottom:10px;">
-                        <button onclick="backToContacts()" style="width:40px; background:none;">←</button>
-                        <b id="active-user-name" style="margin-left:10px;"></b>
-                    </div>
-                    <div id="chat-box"></div>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="m-in" placeholder="Message..." style="margin:0;">
-                        <button onclick="sendMsg()" style="width:60px;">></button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-set" class="tab-sec" style="display:none;">
-                <div class="card">
-                    <input type="number" id="set-weight" placeholder="Poids (kg)">
-                    <input type="number" id="set-height" placeholder="Taille (cm)">
-                    <input type="text" id="set-goal" placeholder="Objectif">
-                    <button onclick="updateProfile()">SAUVEGARDER</button>
-                </div>
-                <div class="card" id="liaison-card">
-                    <div id="coa-pairing" style="display:none;"><div id="pair-display" style="font-size:2rem; text-align:center; color:var(--accent); font-weight:bold;">------</div><button onclick="genPairCode()">GÉNÉRER CODE</button></div>
-                    <div id="ath-pairing" style="display:none;"><input type="text" id="pair-input" placeholder="Code Coach"><button onclick="joinCoach()">LIER</button></div>
-                </div>
-                <button onclick="auth.signOut().then(()=>location.reload())" style="background:#ed4956;">DÉCONNEXION</button>
-            </div>
-        </main>
-
-        <nav class="nav-bar">
-            <div class="nav-item active" onclick="setTab('home', this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Home</div>
-            <div class="nav-item" onclick="setTab('msg', this)"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Chat</div>
-            <div class="nav-item" onclick="setTab('set', this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Profil</div>
-        </nav>
-    </div>
-
-    <script>
-        const config = { apiKey: "AIzaSyDKvUUqhl9xIBFVuBDT35rbjkFxBxWX5ZU", authDomain: "startgo-project.firebaseapp.com", projectId: "startgo-project", storageBucket: "startgo-project.firebasestorage.app", messagingSenderId: "920233789220", appId: "1:920233789220:web:9f8a8d9fd3a3add39a55b1" };
-        firebase.initializeApp(config);
-        const auth = firebase.auth(), db = firebase.firestore();
-        let uData = null, activeChatId = null, chatUnsub = null;
-
-        auth.onAuthStateChanged(async (u) => {
-            if (u) {
-                const snap = await db.collection('users').doc(u.uid).get();
-                uData = snap.data();
-                if(uData) {
-                    document.getElementById('user-name').innerText = uData.name;
-                    loadUI();
-                    document.getElementById('auth-ui').style.display = 'none';
-                    document.getElementById('app-ui').style.display = 'block';
-                }
-            } else {
-                document.getElementById('auth-ui').style.display = 'flex';
-                document.getElementById('app-ui').style.display = 'none';
-            }
-        });
-
-        function loadUI() {
-            const isCoach = uData.role === 'coach';
-            document.getElementById('role-tag').innerText = uData.role.toUpperCase();
-            document.getElementById('ath-home').style.display = isCoach ? 'none' : 'block';
-            document.getElementById('coa-home').style.display = isCoach ? 'block' : 'none';
-            document.getElementById('coa-pairing').style.display = isCoach ? 'block' : 'none';
-            document.getElementById('ath-pairing').style.display = isCoach ? 'none' : 'block';
-            document.getElementById('set-weight').value = uData.weight || "";
-            document.getElementById('set-height').value = uData.height || "";
-            document.getElementById('set-goal').value = uData.goal || "";
-        }
-
-        async function searchUsers(val) {
-            const resBox = document.getElementById('search-results');
-            if(val.length < 2) { resBox.innerHTML = ""; return; }
-            const s = await db.collection('users').where('name', '>=', val).limit(5).get();
-            resBox.innerHTML = "";
-            s.forEach(doc => {
-                let u = doc.data(); if(u.uid === auth.currentUser.uid) return;
-                let d = document.createElement('div');
-                d.style = "padding:10px; border-bottom:1px solid #222; cursor:pointer;";
-                d.innerText = u.name + " (" + u.role + ")";
-                d.onclick = () => { openChat(u.uid, u.name); resBox.innerHTML = ""; };
-                resBox.appendChild(d);
-            });
-        }
-
-        async function loadContacts() {
-            const list = document.getElementById('contacts-list');
-            list.innerHTML = "Chargement...";
-            let contacts = [];
-            if(uData.role === 'coach') {
-                const s = await db.collection('users').where('coachId', '==', auth.currentUser.uid).get();
-                s.forEach(doc => contacts.push(doc.data()));
-            } else if(uData.coachId) {
-                const doc = await db.collection('users').doc(uData.coachId).get();
-                if(doc.exists) contacts.push(doc.data());
-            }
-            list.innerHTML = contacts.length ? "" : "<p style='color:gray;text-align:center;'>Aucun contact lié.</p>";
-            contacts.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'msg-list-item';
-                div.onclick = () => openChat(c.uid, c.name);
-                div.innerHTML = `<img src="https://ui-avatars.com/api/?name=${c.name}&background=random" class="msg-avatar">
-                                 <div><b>${c.name}</b><br><small style="color:gray">${c.role}</small></div>`;
-                list.appendChild(div);
-            });
-        }
-
-        function openChat(uid, name) {
-            if(chatUnsub) chatUnsub();
-            activeChatId = uid;
-            document.getElementById('contacts-container').style.display = 'none';
-            document.getElementById('chat-window').style.display = 'block';
-            document.getElementById('active-user-name').innerText = name;
-            
-            // ID de salon unique basé sur les deux UIDs triés (pour que A->B et B->A soit le même salon)
-            const chatId = [auth.currentUser.uid, uid].sort().join('_');
-            
-            chatUnsub = db.collection('chats').doc(chatId).collection('messages')
-                .orderBy('date', 'asc')
-                .onSnapshot(s => {
-                    const box = document.getElementById('chat-box');
-                    box.innerHTML = "";
-                    s.forEach(doc => {
-                        const m = doc.data();
-                        const b = document.createElement('div');
-                        b.className = `bubble ${m.sender === auth.currentUser.uid ? 'me' : 'them'}`;
-                        b.innerText = m.text;
-                        box.appendChild(b);
-                    });
-                    box.scrollTop = box.scrollHeight;
-                });
-        }
-
-        async function sendMsg() {
-            const txt = document.getElementById('m-in').value.trim();
-            if(!txt || !activeChatId) return;
-            const chatId = [auth.currentUser.uid, activeChatId].sort().join('_');
-            await db.collection('chats').doc(chatId).collection('messages').add({
-                text: txt, sender: auth.currentUser.uid, date: Date.now()
-            });
-            document.getElementById('m-in').value = "";
-        }
-
-        function backToContacts() {
-            if(chatUnsub) chatUnsub();
-            document.getElementById('contacts-container').style.display = 'block';
-            document.getElementById('chat-window').style.display = 'none';
-        }
-
-        function setTab(id, el) {
-            document.querySelectorAll('.tab-sec').forEach(t => t.style.display = 'none');
-            document.getElementById('tab-'+id).style.display = 'block';
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            if(id === 'msg') loadContacts();
-        }
-
-        async function updateProfile() {
-            const up = { weight: document.getElementById('set-weight').value, height: document.getElementById('set-height').value, goal: document.getElementById('set-goal').value };
-            await db.collection('users').doc(auth.currentUser.uid).update(up);
-            alert("Profil mis à jour !");
-        }
-
-        async function genPairCode() {
-            const code = Math.random().toString(36).substring(2,8).toUpperCase();
-            await db.collection('pairing_codes').doc(code).set({ coachId: auth.currentUser.uid, expires: Date.now() + 600000 });
-            document.getElementById('pair-display').innerText = code;
-        }
-
-        async function joinCoach() {
-            const code = document.getElementById('pair-input').value.toUpperCase().trim();
-            const d = await db.collection('pairing_codes').doc(code).get();
-            if(d.exists && Date.now() < d.data().expires) {
-                await db.collection('users').doc(auth.currentUser.uid).update({ coachId: d.data().coachId });
-                alert("Coach lié !"); location.reload();
-            } else alert("Code invalide ou expiré");
-        }
-
-        async function handleAuth() {
-            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            try {
-                if(document.getElementById('signup-fields').style.display === 'block') {
-                    const r = await auth.createUserWithEmailAndPassword(e, p);
-                    await db.collection('users').doc(r.user.uid).set({ uid: r.user.uid, name: document.getElementById('reg-name').value, role: document.getElementById('reg-role').value });
-                } else await auth.signInWithEmailAndPassword(e, p);
-            } catch(err) { alert(err.message); }
+            if(document.getElementById('signup-fields').style.display === 'block') {
+                const r = await auth.createUserWithEmailAndPassword(e, p);
+                await db.collection('users').doc(r.user.uid).set({ uid: r.user.uid, name: document.getElementById('reg-name').value, role: document.getElementById('reg-role').value });
+            } else await auth.signInWithEmailAndPassword(e, p);
         }
     </script>
 </body>
