@@ -3,265 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StartGo - Liquid Precision Pro</title>
+    <title>StartGo - Login</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --bg: #f0f2f5;
+            --bg: #e2e8f0;
             --glass: rgba(255, 255, 255, 0.5);
-            --glass-stroke: rgba(255, 255, 255, 0.7);
             --text: #1e293b;
-            --sub: #64748b;
             --accent: #ff4757;
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding-bottom: 50px;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; color: var(--text);
         }
 
-        .glass-panel {
+        .auth-card {
             background: var(--glass);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-stroke);
-            border-radius: 40px; /* Plus arrondi et liquide */
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.7);
+            padding: 40px; border-radius: 40px; width: 90%; max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center;
         }
 
-        header {
-            width: 90%; max-width: 450px; padding: 25px;
-            display: flex; justify-content: space-between; align-items: center; margin-top: 20px;
-        }
-
-        .logo { font-weight: 900; letter-spacing: -1px; font-size: 1.1rem; }
-        .status-pill { background: white; padding: 6px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 800; color: var(--accent); }
-
-        /* Main Display */
-        .hero {
-            width: 90%; max-width: 450px; margin-top: 15px; padding: 40px 20px; text-align: center;
-        }
-
-        #sessionName {
-            background: transparent; border: none; font-size: 1.1rem; font-weight: 700;
-            color: var(--text); text-align: center; margin-bottom: 5px; width: 100%; outline: none;
-        }
-
-        #time { font-size: 8rem; font-weight: 900; letter-spacing: -6px; line-height: 1; margin: 10px 0; }
-        .label { font-size: 0.6rem; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Stats Blocks */
-        .stats-grid {
-            width: 90%; max-width: 450px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;
-        }
-
-        .stat-card { padding: 25px; text-align: center; }
-        .val { font-size: 1.6rem; font-weight: 800; display: block; }
-        .unit { font-size: 0.7rem; color: var(--sub); margin-left: 2px; }
-
-        /* Remote Control Block */
-        .remote-control {
-            width: 90%; max-width: 450px; margin-top: 15px; padding: 20px;
-            display: flex; flex-direction: column; gap: 15px;
-            background: rgba(255, 255, 255, 0.6);
-        }
-
-        .remote-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        h2 { font-weight: 900; letter-spacing: -1px; margin-bottom: 30px; }
         
-        .btn-remote {
-            background: white; border: 1px solid var(--glass-stroke); border-radius: 20px;
-            padding: 15px; font-size: 0.7rem; font-weight: 800; color: var(--text);
-            cursor: pointer; transition: 0.2s; text-transform: uppercase;
-        }
-        .btn-remote:active { background: var(--text); color: white; transform: translateY(2px); }
-
-        /* Controls */
-        .controls { width: 90%; max-width: 450px; margin-top: 15px; padding: 30px; }
-        .input-group { margin-bottom: 20px; }
-        .input-header { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 800; color: var(--sub); margin-bottom: 10px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        label { font-size: 0.7rem; font-weight: 800; color: #64748b; margin-left: 15px; text-transform: uppercase; }
         
-        input[type=range] { width: 100%; height: 6px; border-radius: 10px; appearance: none; background: rgba(0,0,0,0.05); outline: none; }
-        input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; background: var(--text); border-radius: 50%; cursor: pointer; }
+        input, select {
+            width: 100%; padding: 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.4); margin-top: 5px; outline: none; box-sizing: border-box;
+            font-family: inherit; font-weight: 600;
+        }
+
+        .role-selector {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;
+        }
+
+        .role-option {
+            padding: 15px; border-radius: 20px; border: 2px solid transparent;
+            background: white; cursor: pointer; font-weight: 800; transition: 0.3s;
+        }
+
+        .role-option.active { border-color: var(--accent); color: var(--accent); }
 
         #mainBtn {
-            width: 100%; padding: 24px; border-radius: 30px; border: none;
-            background: var(--text); color: white; font-size: 1rem; font-weight: 800;
-            letter-spacing: 2px; cursor: pointer; transition: 0.3s;
+            width: 100%; padding: 18px; border-radius: 25px; border: none;
+            background: var(--text); color: white; font-weight: 800; cursor: pointer;
+            margin-top: 20px; transition: 0.3s;
         }
-        #mainBtn:active { transform: scale(0.95); background: var(--accent); }
 
-        /* History */
-        .history { width: 90%; max-width: 450px; margin-top: 30px; }
-        .h-item {
-            background: rgba(255, 255, 255, 0.4); margin-bottom: 12px; padding: 20px;
-            border-radius: 30px; display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid var(--glass-stroke);
-        }
-        .h-info input { border: none; background: transparent; font-weight: 800; color: var(--text); font-size: 1rem; width: 120px; }
-        .h-info span { font-size: 0.6rem; color: var(--sub); display: block; margin-top: 2px; }
-        .h-data { text-align: right; }
-        .h-time { font-size: 1.2rem; font-weight: 900; display: block; }
-        .h-speed { font-size: 0.75rem; color: var(--accent); font-weight: 800; }
-        .delete-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1rem; margin-left: 10px; }
+        .toggle-link { font-size: 0.8rem; margin-top: 20px; cursor: pointer; color: #64748b; }
     </style>
 </head>
 <body>
 
-    <header class="glass-panel">
-        <div class="logo">STARTGO<span style="color:var(--accent)">.</span></div>
-        <div id="status" class="status-pill">Ready</div>
-    </header>
-
-    <main class="hero glass-panel">
-        <input type="text" id="sessionName" value="SPRINT #1">
-        <div id="time">0.00</div>
-        <span class="label">secondes</span>
-    </main>
-
-    <div class="stats-grid">
-        <div class="stat-card glass-panel">
-            <span class="label">Réaction</span>
-            <span class="val"><span id="react">0.00</span><small class="unit">s</small></span>
-        </div>
-        <div class="stat-card glass-panel">
-            <span class="label">Vitesse</span>
-            <span class="val"><span id="speed">0.0</span><small class="unit">km/h</small></span>
-        </div>
-    </div>
-
-    <section class="remote-control glass-panel">
-        <span class="label" style="text-align: center;">Télécommande de simulation</span>
-        <div class="remote-btns">
-            <button class="btn-remote" onclick="sim('foot')">Décollage</button>
-            <button class="btn-remote" onclick="sim('finish')">Arrivée</button>
-        </div>
-    </section>
-
-    <section class="controls glass-panel">
+    <div class="auth-card">
+        <div id="auth-title"><h2>STARTGO<span style="color:var(--accent)">.</span></h2></div>
+        
         <div class="input-group">
-            <div class="input-header"><span>TRACK</span> <span><b id="d-val">10</b>m</span></div>
-            <input type="range" id="dist" min="5" max="100" value="10" oninput="document.getElementById('d-val').innerText=this.value">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="ton@email.com">
         </div>
+        
         <div class="input-group">
-            <div class="input-header"><span>DELAY</span> <span><b id="w-val">3</b>s</span></div>
-            <input type="range" id="wait" min="1" max="10" value="3" oninput="document.getElementById('w-val').innerText=this.value">
+            <label>Mot de passe</label>
+            <input type="password" id="password" placeholder="••••••••">
         </div>
-        <button id="mainBtn" onclick="run()">Lancer la session</button>
-    </section>
 
-    <div class="history" id="history-list">
-        <span class="label" style="margin-left: 15px; margin-bottom: 10px; display: block;">Sessions précédentes</span>
+        <div id="signup-extras" style="display: none;">
+            <div class="input-group">
+                <label>Nom complet</label>
+                <input type="text" id="fullname" placeholder="Jean Dupont">
+            </div>
+            <label>Je suis :</label>
+            <div class="role-selector">
+                <div class="role-option active" onclick="setRole('athlete')" id="opt-athlete">ATHLÈTE</div>
+                <div class="role-option" onclick="setRole('coach')" id="opt-coach">COACH</div>
+            </div>
+        </div>
+
+        <button id="mainBtn" onclick="handleAuth()">Se connecter</button>
+        <div class="toggle-link" onclick="toggleMode()" id="toggle-text">Pas de compte ? Créer un profil</div>
     </div>
 
     <script>
-        let state = "IDLE", start, timer, logs = [];
-
-        window.onload = () => {
-            const saved = document.cookie.split('; ').find(r => r.startsWith('history='));
-            if (saved) {
-                logs = JSON.parse(decodeURIComponent(saved.split('=')[1]));
-                renderHistory();
-            }
+        // CONFIGURATION FIREBASE
+        const firebaseConfig = {
+            apiKey: "XXXXX",
+            authDomain: "XXXXX",
+            projectId: "XXXXX",
+            storageBucket: "XXXXX",
+            messagingSenderId: "XXXXX",
+            appId: "XXXXX"
         };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        function beep(f, d) {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const o = ctx.createOscillator(), g = ctx.createGain();
-            o.connect(g); g.connect(ctx.destination);
-            o.frequency.value = f; o.start(); setTimeout(() => o.stop(), d);
+        let isSignup = false;
+        let selectedRole = 'athlete';
+
+        function setRole(role) {
+            selectedRole = role;
+            document.getElementById('opt-athlete').classList.toggle('active', role === 'athlete');
+            document.getElementById('opt-coach').classList.toggle('active', role === 'coach');
         }
 
-        function run() {
-            state = "WAITING";
-            document.getElementById('status').innerText = "Attente...";
-            document.getElementById('mainBtn').disabled = true;
-            document.getElementById('mainBtn').style.opacity = "0.3";
-
-            // Délai fixe + aléatoire 0-10s
-            const delay = (parseInt(document.getElementById('wait').value) * 1000) + (Math.random() * 10000);
-            
-            setTimeout(() => {
-                if(state !== "WAITING") return;
-                beep(880, 500);
-                start = performance.now();
-                state = "RUNNING";
-                document.getElementById('status').innerText = "Running";
-                timer = setInterval(() => {
-                    const now = (performance.now() - start) / 1000;
-                    document.getElementById('time').innerText = now.toFixed(2);
-                    const d = document.getElementById('dist').value;
-                    document.getElementById('speed').innerText = ((d/now)*3.6).toFixed(1);
-                }, 40);
-            }, delay);
+        function toggleMode() {
+            isSignup = !isSignup;
+            document.getElementById('signup-extras').style.display = isSignup ? 'block' : 'none';
+            document.getElementById('mainBtn').innerText = isSignup ? 'Créer mon compte' : 'Se connecter';
+            document.getElementById('toggle-text').innerText = isSignup ? 'Déjà un compte ? Se connecter' : 'Pas de compte ? Créer un profil';
         }
 
-        function sim(type) {
-            if(state !== "RUNNING") return;
-            if(type === 'foot') {
-                document.getElementById('react').innerText = ((performance.now()-start)/1000).toFixed(2);
-            } else {
-                clearInterval(timer);
-                const s = {
-                    id: Date.now(),
-                    n: document.getElementById('sessionName').value,
-                    t: document.getElementById('time').innerText,
-                    v: document.getElementById('speed').innerText,
-                    d: new Date().toLocaleDateString(),
-                    h: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                };
-                logs.unshift(s);
-                save(); renderHistory(); reset();
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                if (isSignup) {
+                    const name = document.getElementById('fullname').value;
+                    const res = await auth.createUserWithEmailAndPassword(email, password);
+                    // Sauvegarde du rôle dans la base de données
+                    await db.collection('users').doc(res.user.uid).set({
+                        name: name,
+                        role: selectedRole,
+                        email: email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    alert("Compte créé !");
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                }
+                // Une fois connecté, on redirigera vers le dashboard (prochaine étape)
+                alert("Connecté !");
+            } catch (error) {
+                alert(error.message);
             }
-        }
-
-        function reset() {
-            state = "IDLE";
-            document.getElementById('status').innerText = "Ready";
-            document.getElementById('mainBtn').disabled = false;
-            document.getElementById('mainBtn').style.opacity = "1";
-        }
-
-        function save() {
-            document.cookie = `history=${encodeURIComponent(JSON.stringify(logs.slice(0,15)))}; max-age=31536000; path=/`;
-        }
-
-        function updateLog(id, val) {
-            const l = logs.find(x => x.id === id);
-            if(l) { l.n = val; save(); }
-        }
-
-        function delLog(id) {
-            logs = logs.filter(x => x.id !== id);
-            save(); renderHistory();
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            list.innerHTML = '<span class="label" style="margin-left: 15px; margin-bottom: 10px; display: block;">Sessions précédentes</span>';
-            logs.forEach(s => {
-                const div = document.createElement('div');
-                div.className = 'h-item';
-                div.innerHTML = `
-                    <div class="h-info">
-                        <input type="text" value="${s.n}" onchange="updateLog(${s.id}, this.value)">
-                        <span>${s.d} à ${s.h}</span>
-                    </div>
-                    <div style="display:flex; align-items:center;">
-                        <div class="h-data">
-                            <span class="h-time">${s.t}s</span>
-                            <span class="h-speed">${s.v} km/h</span>
-                        </div>
-                        <button class="delete-btn" onclick="delLog(${s.id})">×</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
         }
     </script>
 </body>
