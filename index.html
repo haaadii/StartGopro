@@ -2,245 +2,278 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chrono Precision</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>StartGo Pro - Ultimate</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
-        :root {
-            --bg: #ffffff;
-            --surface: #f4f4f5;
-            --text: #09090b;
-            --sub: #71717a;
-            --accent: #ef4444; /* Rouge Sport */
-            --glass: rgba(255, 255, 255, 0.8);
-        }
+        :root { --bg: #f8fafc; --panel: #ffffff; --stroke: #e2e8f0; --text: #0f172a; --sub: #64748b; --accent: #ff4757; --nav-bg: #0f172a; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
+        
+        .header { background: var(--panel); padding: 15px 20px; border-bottom: 1px solid var(--stroke); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+        .container { padding: 15px; max-width: 500px; margin: 0 auto; }
+        
+        /* CARDS & UI */
+        .card { background: var(--panel); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--stroke); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        input, select { background: #f1f5f9; border: 1px solid var(--stroke); padding: 14px; border-radius: 12px; width: 100%; margin-bottom: 12px; box-sizing: border-box; font-size: 1rem; color: var(--text); }
+        button { background: var(--text); color: white; padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-accent { background: var(--accent); }
+        .btn-ghost { background: #f1f5f9; color: var(--text); margin-top: 5px; }
 
-        body {
-            font-family: 'Inter', -apple-system, system-ui, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
+        /* MESSAGERIE OPTIMISÉE */
+        .search-box { position: sticky; top: 0; background: var(--bg); padding-bottom: 10px; z-index: 5; }
+        .msg-list-item { display: flex; align-items: center; padding: 12px; border-radius: 15px; cursor: pointer; margin-bottom: 5px; transition: 0.2s; }
+        .msg-list-item:hover { background: white; }
+        .msg-avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: linear-gradient(45deg, #e2e8f0, #cbd5e1); border: 2px solid white; }
+        .msg-info { flex: 1; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .msg-name { font-weight: 700; font-size: 1.05rem; }
+        .msg-status { color: var(--sub); font-size: 0.85rem; }
 
-        /* En-tête */
-        header {
-            width: 100%;
-            max-width: 450px;
-            padding: 40px 24px 20px;
-            box-sizing: border-box;
-        }
+        /* CHAT WINDOW */
+        #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 200; display: none; flex-direction: column; }
+        .chat-header { background: white; padding: 15px; border-bottom: 1px solid var(--stroke); display: flex; align-items: center; gap: 15px; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { padding: 12px 16px; border-radius: 20px; max-width: 75%; font-size: 0.95rem; line-height: 1.4; position: relative; }
+        .bubble.me { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+        .bubble.them { align-self: flex-start; background: white; color: var(--text); border: 1px solid var(--stroke); border-bottom-left-radius: 4px; }
+        .chat-input-area { background: white; padding: 15px; border-top: 1px solid var(--stroke); display: flex; gap: 10px; }
 
-        .label-mini {
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--sub);
-        }
-
-        /* Section Chrono Principale */
-        .main-display {
-            width: 100%;
-            max-width: 450px;
-            padding: 20px 24px;
-            box-sizing: border-box;
-            text-align: left;
-        }
-
-        #time {
-            font-size: 8rem;
-            font-weight: 900;
-            letter-spacing: -0.05em;
-            line-height: 1;
-            margin: 10px 0;
-        }
-
-        /* Grille de données */
-        .data-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2px;
-            background-color: #e4e4e7;
-            width: 100%;
-            border-top: 1px solid #e4e4e7;
-            border-bottom: 1px solid #e4e4e7;
-        }
-
-        .data-cell {
-            background-color: var(--bg);
-            padding: 24px;
-        }
-
-        .val-big {
-            font-size: 1.5rem;
-            font-weight: 700;
-            display: block;
-        }
-
-        /* Contrôles */
-        .controls {
-            width: 100%;
-            max-width: 450px;
-            padding: 40px 24px;
-            box-sizing: border-box;
-        }
-
-        .slider-group {
-            margin-bottom: 30px;
-        }
-
-        input[type=range] {
-            width: 100%;
-            margin-top: 15px;
-            accent-color: var(--text);
-        }
-
-        #mainBtn {
-            width: 100%;
-            background-color: var(--text);
-            color: var(--bg);
-            border: none;
-            padding: 24px;
-            border-radius: 0; /* Design carré plus pro */
-            font-size: 1rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        #mainBtn:active {
-            background-color: var(--accent);
-        }
-
-        /* Historique épuré */
-        .history {
-            width: 100%;
-            max-width: 450px;
-            padding: 0 24px 40px;
-            box-sizing: border-box;
-        }
-
-        .history-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding: 16px 0;
-            border-bottom: 1px solid #f4f4f5;
-        }
-
-        /* Mode Debug caché */
-        .debug-bar {
-            opacity: 0.1;
-            padding: 20px;
-        }
-
-        .btn-debug {
-            border: 1px solid var(--text);
-            background: none;
-            padding: 5px 10px;
-            font-size: 0.6rem;
-            cursor: pointer;
-        }
+        /* NAV BAR */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 12px 5px; border-top-left-radius: 25px; border-top-right-radius: 25px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
+        .nav-item { color: #94a3b8; text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.5; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div id="status" class="label-mini">● Système Prêt</div>
-    </header>
-
-    <main class="main-display">
-        <div class="label-mini">Temps écoulé (s)</div>
-        <div id="time">0.00</div>
-    </main>
-
-    <section class="data-grid">
-        <div class="data-cell">
-            <span class="label-mini">Vitesse</span>
-            <span id="speed" class="val-big">0.0 <small>km/h</small></span>
-        </div>
-        <div class="data-cell">
-            <span class="label-mini">Réaction</span>
-            <span id="react" class="val-big">0.00 <small>s</small></span>
-        </div>
-    </section>
-
-    <section class="controls">
-        <div class="slider-group">
-            <div style="display: flex; justify-content: space-between;">
-                <span class="label-mini">Distance</span>
-                <span class="label-mini" style="color: var(--text)"><span id="d-val">10</span> m</span>
+    <div id="auth-ui" style="display:none; height:100vh; align-items:center; justify-content:center; padding:20px;">
+        <div class="card" style="width:100%; max-width:350px; text-align:center;">
+            <h1 style="font-weight:900; letter-spacing:-1px; font-size:2rem;">STARTGO<span style="color:var(--accent);">.</span></h1>
+            <div id="signup-fields" style="display:none;">
+                <input type="text" id="reg-name" placeholder="Nom ou Pseudo">
+                <select id="reg-role"><option value="athlete">Athlète</option><option value="coach">Coach</option></select>
             </div>
-            <input type="range" id="dist" min="5" max="100" value="10" oninput="document.getElementById('d-val').innerText=this.value">
+            <input type="email" id="email" placeholder="Email"><input type="password" id="pass" placeholder="Mdp">
+            <button onclick="handleAuth()" class="btn-accent">CONTINUER</button>
+            <p onclick="document.getElementById('signup-fields').style.display='block'" style="font-size:0.8rem; margin-top:15px; color:var(--sub); cursor:pointer;">Créer un compte</p>
         </div>
-        <button id="mainBtn" onclick="launch()">Démarrer Session</button>
-    </section>
+    </div>
 
-    <section class="history" id="history">
-        <div class="label-mini" style="margin-bottom: 20px;">Historique Récent</div>
-    </section>
+    <div id="app-ui" style="display:none;">
+        <header class="header">
+            <div style="font-weight:900; font-size:1.2rem;">STARTGO<span id="role-tag" style="color:var(--accent); font-size:0.6rem; vertical-align: top; margin-left:2px;"></span></div>
+            <div id="user-name" style="font-size:0.85rem; font-weight:600; color:var(--sub);">Chargement...</div>
+        </header>
 
-    <div class="debug-bar">
-        <button class="btn-debug" onclick="trigger('foot')">Simu Décollage</button>
-        <button class="btn-debug" onclick="trigger('finish')">Simu Arrivée</button>
+        <main class="container">
+            <div id="tab-home" class="tab-sec">
+                <div id="ath-home" style="display:none;">
+                    <div class="card"><div id="timer" style="font-size:5rem; font-weight:900; text-align:center; color:var(--text);">0.00</div><button class="btn-accent">START SESSION</button></div>
+                </div>
+                <div id="coa-home" style="display:none;"><h3 style="margin:0 0 15px 0;">Mes Athlètes</h3><div id="coa-list"></div></div>
+            </div>
+
+            <div id="tab-msg" class="tab-sec" style="display:none;">
+                <div class="search-box">
+                    <input type="text" id="user-search" placeholder="Rechercher par pseudo..." oninput="searchUsers(this.value)" style="margin:0;">
+                    <div id="search-results" style="background:white; border-radius:10px; margin-top:5px; box-shadow:0 5px 10px rgba(0,0,0,0.1);"></div>
+                </div>
+                <div id="contacts-list" style="margin-top:10px;"></div>
+            </div>
+
+            <div id="tab-set" class="tab-sec" style="display:none;">
+                <div class="card">
+                    <h3 style="margin-top:0;">Paramètres Profil</h3>
+                    <label style="font-size:0.75rem; color:var(--sub); margin-left:5px;">Poids (kg)</label><input type="number" id="set-weight">
+                    <label style="font-size:0.75rem; color:var(--sub); margin-left:5px;">Taille (cm)</label><input type="number" id="set-height">
+                    <label style="font-size:0.75rem; color:var(--sub); margin-left:5px;">Objectif principal</label><input type="text" id="set-goal">
+                    <button onclick="updateProfile()" class="btn-accent">SAUVEGARDER</button>
+                </div>
+                <div class="card" id="liaison-card">
+                    <h3>Connexion Coach</h3>
+                    <div id="coa-pairing" style="display:none; text-align:center;">
+                        <div id="pair-display" style="font-size:3.5rem; font-weight:900; color:var(--accent); letter-spacing:2px;">----</div>
+                        <button onclick="genPairCode()" class="btn-ghost">GÉNÉRER UN CODE</button>
+                    </div>
+                    <div id="ath-pairing" style="display:none;">
+                        <input type="text" id="pair-input" placeholder="Code du coach">
+                        <button onclick="joinCoach()" class="btn-ghost">REJOINDRE LE COACH</button>
+                    </div>
+                </div>
+                <button onclick="auth.signOut().then(()=>location.reload())" style="background:#000; margin-top:10px;">DÉCONNEXION</button>
+            </div>
+        </main>
+
+        <div id="chat-window">
+            <div class="chat-header">
+                <button onclick="backToContacts()" style="width:40px; background:none; color:var(--text); font-size:1.5rem;">←</button>
+                <div id="chat-header-avatar" class="msg-avatar" style="width:40px; height:40px; margin:0;"></div>
+                <b id="active-user-name">...</b>
+            </div>
+            <div id="chat-box"></div>
+            <div class="chat-input-area">
+                <input type="text" id="m-in" placeholder="Votre message..." style="margin:0; border-radius:25px;">
+                <button onclick="sendMsg()" class="btn-accent" style="width:55px; border-radius:50%; flex-shrink:0;">></button>
+            </div>
+        </div>
+
+        <nav class="nav-bar">
+            <div class="nav-item active" onclick="setTab('home', this)"><svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Home</div>
+            <div class="nav-item" onclick="setTab('msg', this)"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>Messages</div>
+            <div class="nav-item" onclick="setTab('set', this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 00 1.82.33H9a1.65 1.65 0 00 1-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 00 1 1.51 1.65 1.65 0 00 1.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 00 1.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path></svg>Profil</div>
+        </nav>
     </div>
 
     <script>
-        let state = "IDLE", startTime, timer;
-        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        const config = { apiKey: "AIzaSyDKvUUqhl9xIBFVuBDT35rbjkFxBxWX5ZU", authDomain: "startgo-project.firebaseapp.com", projectId: "startgo-project", storageBucket: "startgo-project.firebasestorage.app", messagingSenderId: "920233789220", appId: "1:920233789220:web:9f8a8d9fd3a3add39a55b1" };
+        firebase.initializeApp(config);
+        const auth = firebase.auth(), db = firebase.firestore();
+        let uData = null, activeChatId = null;
 
-        function beep(f, d) {
-            const o = audio.createOscillator(), g = audio.createGain();
-            o.connect(g); g.connect(audio.destination);
-            o.frequency.value = f; o.start(); setTimeout(() => o.stop(), d);
-        }
-
-        function launch() {
-            state = "WAIT";
-            document.getElementById('status').innerText = "○ En attente...";
-            document.getElementById('status').style.color = "var(--accent)";
-            
-            setTimeout(() => {
-                if(state !== "WAIT") return;
-                beep(800, 200);
-                startTime = performance.now();
-                state = "RUN";
-                document.getElementById('status').innerText = "● Course en cours";
-                document.getElementById('status').style.color = "var(--text)";
-                timer = setInterval(() => {
-                    document.getElementById('time').innerText = ((performance.now()-startTime)/1000).toFixed(2);
-                }, 40);
-            }, 1000 + Math.random() * 2000);
-        }
-
-        function trigger(type) {
-            if(state !== "RUN") return;
-            if(type === 'foot') {
-                const r = (performance.now() - startTime)/1000;
-                document.getElementById('react').innerHTML = `${r.toFixed(2)} <small>s</small>`;
+        auth.onAuthStateChanged(async (u) => {
+            if (u) {
+                const snap = await db.collection('users').doc(u.uid).get();
+                uData = snap.data();
+                if(uData) {
+                    document.getElementById('user-name').innerText = uData.name;
+                    loadUI(); loadContacts(); fillFields();
+                    document.getElementById('auth-ui').style.display = 'none';
+                    document.getElementById('app-ui').style.display = 'block';
+                }
             } else {
-                clearInterval(timer);
-                const t = parseFloat(document.getElementById('time').innerText);
-                const d = document.getElementById('dist').value;
-                const v = ((d / t) * 3.6).toFixed(1);
-                document.getElementById('speed').innerHTML = `${v} <small>km/h</small>`;
-                addHistory(t, v);
-                state = "IDLE";
-                document.getElementById('status').innerText = "● Session Terminée";
+                document.getElementById('auth-ui').style.display = 'flex';
+                document.getElementById('app-ui').style.display = 'none';
+            }
+        });
+
+        function loadUI() {
+            const isCoach = uData.role === 'coach';
+            document.getElementById('role-tag').innerText = uData.role.toUpperCase();
+            document.getElementById('ath-home').style.display = isCoach ? 'none' : 'block';
+            document.getElementById('coa-home').style.display = isCoach ? 'block' : 'none';
+            document.getElementById('coa-pairing').style.display = isCoach ? 'block' : 'none';
+            document.getElementById('ath-pairing').style.display = isCoach ? 'none' : 'block';
+            if(isCoach) loadCoachList();
+        }
+
+        async function searchUsers(val) {
+            const resBox = document.getElementById('search-results');
+            if(val.length < 2) { resBox.innerHTML = ""; return; }
+            const s = await db.collection('users').where('name', '>=', val).limit(5).get();
+            resBox.innerHTML = "";
+            s.forEach(doc => {
+                const u = doc.data();
+                if(u.uid === auth.currentUser.uid) return;
+                const d = document.createElement('div');
+                d.style.padding = "15px"; d.style.cursor = "pointer"; d.style.borderBottom = "1px solid #f1f5f9";
+                d.innerHTML = `<b>${u.name}</b> <small style="color:var(--sub)">(${u.role})</small>`;
+                d.onclick = () => { openChat(u.uid, u.name); resBox.innerHTML = ""; };
+                resBox.appendChild(d);
+            });
+        }
+
+        async function loadContacts() {
+            const list = document.getElementById('contacts-list');
+            list.innerHTML = "";
+            let users = [];
+            // Affiche coach ou athlètes liés + gens avec qui on a déjà discuté
+            if(uData.role === 'coach') {
+                const s = await db.collection('users').where('coachId', '==', auth.currentUser.uid).get();
+                s.forEach(d => users.push(d.data()));
+            } else if(uData.coachId) {
+                const d = await db.collection('users').doc(uData.coachId).get();
+                if(d.exists) users.push(d.data());
+            }
+            users.forEach(u => {
+                const div = document.createElement('div');
+                div.className = 'msg-list-item';
+                div.onclick = () => openChat(u.uid, u.name);
+                div.innerHTML = `<div class="msg-avatar"></div><div class="msg-info"><div class="msg-name">${u.name}</div><div class="msg-status">En ligne • Cliquez pour discuter</div></div>`;
+                list.appendChild(div);
+            });
+        }
+
+        function openChat(uid, name) {
+            activeChatId = uid;
+            document.getElementById('chat-window').style.display = 'flex';
+            document.getElementById('active-user-name').innerText = name;
+            listenChat();
+        }
+
+        function listenChat() {
+            const myId = auth.currentUser.uid;
+            db.collection('chats').where('sender', 'in', [myId, activeChatId]).onSnapshot(s => {
+                const box = document.getElementById('chat-box'); box.innerHTML = "";
+                let msgs = [];
+                s.forEach(d => {
+                    const m = d.data();
+                    if((m.sender === myId && m.receiver === activeChatId) || (m.sender === activeChatId && m.receiver === myId)) msgs.push(m);
+                });
+                msgs.sort((a,b)=>a.date-b.date).forEach(m => {
+                    const b = document.createElement('div');
+                    b.className = `bubble ${m.sender === myId ? 'me' : 'them'}`;
+                    b.innerText = m.text;
+                    box.appendChild(b);
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        function sendMsg() {
+            const txt = document.getElementById('m-in').value.trim();
+            if(txt && activeChatId) {
+                db.collection('chats').add({ text: txt, sender: auth.currentUser.uid, receiver: activeChatId, date: Date.now() });
+                document.getElementById('m-in').value = "";
             }
         }
 
-        function addHistory(t, v) {
-            const h = document.getElementById('history');
-            const div = document.createElement('div');
-            div.className = 'history-row';
-            div.innerHTML = `<span style="font-weight:700">${t}s</span><span style="color:var(--sub)">${v} km/h</span>`;
-            h.insertBefore(div, h.childNodes[2]);
+        function fillFields() {
+            document.getElementById('set-weight').value = uData.weight || "";
+            document.getElementById('set-height').value = uData.height || "";
+            document.getElementById('set-goal').value = uData.goal || "";
+        }
+
+        async function updateProfile() {
+            await db.collection('users').doc(auth.currentUser.uid).update({ 
+                weight: document.getElementById('set-weight').value, 
+                height: document.getElementById('set-height').value, 
+                goal: document.getElementById('set-goal').value 
+            });
+            alert("Profil mis à jour !");
+        }
+
+        async function genPairCode() {
+            const code = Math.random().toString(36).substring(2,8).toUpperCase();
+            await db.collection('pairing_codes').doc(code).set({ coachId: auth.currentUser.uid, expires: Date.now() + 600000 });
+            document.getElementById('pair-display').innerText = code;
+        }
+
+        async function joinCoach() {
+            const c = document.getElementById('pair-input').value.toUpperCase().trim();
+            const d = await db.collection('pairing_codes').doc(c).get();
+            if(d.exists && Date.now() < d.data().expires) {
+                await db.collection('users').doc(auth.currentUser.uid).update({ coachId: d.data().coachId });
+                location.reload();
+            } else alert("Code invalide ou expiré");
+        }
+
+        function setTab(id, el) {
+            document.querySelectorAll('.tab-sec').forEach(t => t.style.display = 'none');
+            document.getElementById('tab-'+id).style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            if(el) el.classList.add('active');
+        }
+
+        function backToContacts() { document.getElementById('chat-window').style.display = 'none'; }
+
+        async function handleAuth() {
+            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+            if(document.getElementById('signup-fields').style.display === 'block') {
+                const r = await auth.createUserWithEmailAndPassword(e, p);
+                await db.collection('users').doc(r.user.uid).set({ uid: r.user.uid, name: document.getElementById('reg-name').value, role: document.getElementById('reg-role').value });
+            } else await auth.signInWithEmailAndPassword(e, p);
         }
     </script>
 </body>
