@@ -178,4 +178,148 @@
         }
     </script>
 </body>
+</html>        
+        .input-group { margin-bottom: 15px; text-align: left; }
+        label { font-size: 0.65rem; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-left: 15px; }
+        
+        input {
+            width: 100%; padding: 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.5); margin-top: 5px; outline: none; box-sizing: border-box;
+            font-weight: 600; transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent); background: white; }
+
+        .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+        
+        .role-option {
+            padding: 15px; border-radius: 20px; background: rgba(255,255,255,0.4);
+            border: 2px solid transparent; cursor: pointer; font-weight: 800; font-size: 0.8rem;
+            transition: 0.3s; color: var(--sub);
+        }
+        .role-option.active { border-color: var(--accent); color: var(--accent); background: white; }
+
+        #mainBtn {
+            width: 100%; padding: 20px; border-radius: 25px; border: none;
+            background: var(--text); color: white; font-weight: 800; cursor: pointer;
+            margin-top: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.3s;
+        }
+        #mainBtn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        .toggle-link { font-size: 0.75rem; margin-top: 25px; cursor: pointer; color: var(--sub); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <h2>STARTGO<span style="color:var(--accent)">.</span></h2>
+        
+        <div id="signup-fields" style="display: none;">
+            <div class="input-group">
+                <label>Nom complet</label>
+                <input type="text" id="fullname" placeholder="Ex: Marc Kevin">
+            </div>
+            <div class="role-selector">
+                <div class="role-option active" id="opt-athlete" onclick="selectRole('athlete')">ATHLÈTE</div>
+                <div class="role-option" id="opt-coach" onclick="selectRole('coach')">COACH</div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="coach@startgo.com">
+        </div>
+        
+        <div class="input-group">
+            <label>Mot de passe</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <button id="mainBtn" onclick="handleAuth()">Se connecter</button>
+        <div class="toggle-link" id="toggle-btn" onclick="toggleMode()">Nouveau ici ? Créer un compte</div>
+    </div>
+
+    <script>
+        // Ta config Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKvUUqhl9xIBFVuBDT35rbjkFxBxWX5ZU",
+            authDomain: "startgo-project.firebaseapp.com",
+            projectId: "startgo-project",
+            storageBucket: "startgo-project.firebasestorage.app",
+            messagingSenderId: "920233789220",
+            appId: "1:920233789220:web:9f8a8d9fd3a3add39a55b1"
+        };
+
+        // Initialisation
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let isSignup = false;
+        let currentRole = 'athlete'; // Variable pour stocker le rôle choisi
+
+        // Alterne entre Login et Sign-up
+        function toggleMode() {
+            isSignup = !isSignup;
+            document.getElementById('signup-fields').style.display = isSignup ? 'block' : 'none';
+            document.getElementById('mainBtn').innerText = isSignup ? 'Créer le compte' : 'Se connecter';
+            document.getElementById('toggle-btn').innerText = isSignup ? 'Déjà inscrit ? Connexion' : 'Nouveau ici ? Créer un compte';
+        }
+
+        // Gère la sélection visuelle et logique du rôle
+        function selectRole(role) {
+            currentRole = role; 
+            document.getElementById('opt-athlete').classList.toggle('active', role === 'athlete');
+            document.getElementById('opt-coach').classList.toggle('active', role === 'coach');
+        }
+
+        // Fonction principale d'authentification
+        async function handleAuth() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('mainBtn');
+
+            if (!email || !password) {
+                alert("Veuillez remplir tous les champs.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Chargement...";
+
+            try {
+                if (isSignup) {
+                    const name = document.getElementById('fullname').value.trim();
+                    if (!name) throw new Error("Le nom est obligatoire.");
+
+                    // 1. Création de l'utilisateur
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // 2. Création du profil dans Firestore
+                    await db.collection('users').doc(userCredential.user.uid).set({
+                        name: name,
+                        role: currentRole,
+                        email: email,
+                        uid: userCredential.user.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    alert("Compte créé avec succès en tant que " + currentRole + " !");
+                } else {
+                    // Connexion simple
+                    await auth.signInWithEmailAndPassword(email, password);
+                    alert("Connexion réussie !");
+                }
+
+                // Redirection (Optionnel : décommente la ligne suivante)
+                // window.location.href = "dashboard.html";
+
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = isSignup ? 'Créer le compte' : 'Se connecter';
+            }
+        }
+    </script>
+</body>
 </html>
