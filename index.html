@@ -3,271 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StartGo - Precision Timer</title>
+    <title>StartGo Pro - FINAL MODIFIÉ</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg: #F8F9FA; /* Blanc cassé ergonomique */
-            --surface: #ffffff;
-            --text: #1A1A1B;
-            --sub: #6C757D;
-            --accent: #E63946; /* Rouge sport dynamique */
-            --border: #DEE2E6;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        header {
-            width: 100%;
-            max-width: 500px;
-            padding: 30px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-sizing: border-box;
-        }
-
-        .logo { font-weight: 900; font-size: 1.2rem; letter-spacing: -1px; }
-        .status { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--sub); }
-
-        /* Timer Principal */
-        .display-section {
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-            padding: 20px 0;
-        }
-
-        #time {
-            font-size: 8.5rem;
-            font-weight: 900;
-            letter-spacing: -5px;
-            line-height: 0.9;
-            margin: 10px 0;
-        }
-
-        /* Stats Grid */
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 100%;
-            max-width: 500px;
-            border-top: 2px solid var(--border);
-            border-bottom: 2px solid var(--border);
-            background: var(--surface);
-        }
-
-        .stat-box { padding: 25px; text-align: center; border-right: 1px solid var(--border); }
-        .stat-box:last-child { border-right: none; }
-        .label { font-size: 0.65rem; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .value { font-size: 1.6rem; font-weight: 800; }
-
-        /* Configuration */
-        .controls {
-            width: 100%;
-            max-width: 500px;
-            padding: 30px 20px;
-            box-sizing: border-box;
-        }
-
-        .config-row { margin-bottom: 20px; }
-        .config-label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; }
+        :root { --accent: #ff4757; --text: #1e293b; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; color: var(--text); }
+        .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; border: 1px solid white; box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
+        input, button, select { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-family: inherit; box-sizing: border-box; }
+        button { background: var(--text); color: white; font-weight: 800; cursor: pointer; border: none; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
+        .btn-accent { background: var(--accent); }
         
-        input[type=range] { width: 100%; accent-color: var(--text); cursor: pointer; }
-        input[type=text] { 
-            width: 100%; border: none; background: transparent; 
-            font-size: 1.2rem; font-weight: 700; border-bottom: 2px solid var(--border);
-            padding: 5px 0; outline: none; transition: 0.3s;
-        }
-        input[type=text]:focus { border-color: var(--accent); }
-
-        #mainBtn {
-            width: 100%;
-            padding: 30px;
-            background: var(--text);
-            color: white;
-            border: none;
-            font-size: 1.2rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        #mainBtn:active { transform: scale(0.98); background: var(--accent); }
-
-        /* Historique */
-        .history { width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box; }
-        .history-item { 
-            background: var(--surface); padding: 15px; border-radius: 12px; 
-            margin-bottom: 10px; border: 1px solid var(--border);
-            display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center;
-        }
-        .h-name { font-weight: 800; font-size: 0.9rem; }
-        .h-meta { font-size: 0.7rem; color: var(--sub); }
-        .h-val { font-weight: 800; text-align: right; }
+        #auth-section { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #coach-view { display: none; height: 100vh; grid-template-columns: 280px 1fr; }
+        #athlete-view { display: none; padding: 20px; max-width: 450px; margin: auto; }
+        
+        .sidebar { background: white; padding: 20px; border-right: 1px solid #e2e8f0; }
+        .main { padding: 40px; overflow-y: auto; }
+        .ath-item { background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; font-weight: 700; border: 1px solid #edf2f7; }
+        .ath-item:hover { border-color: var(--accent); color: var(--accent); }
+        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">STARTGO<span style="color:var(--accent)">.</span></div>
-        <div id="status" class="status">Prêt</div>
-    </header>
-
-    <div class="display-section">
-        <input type="text" id="sessionName" value="Athlète 1" style="text-align: center; margin-bottom: 20px;">
-        <div id="time">0.00</div>
-    </div>
-
-    <div class="stats">
-        <div class="stat-box">
-            <span class="label">Réaction</span>
-            <span id="react">0.00<small>s</small></span>
-        </div>
-        <div class="stat-box">
-            <span class="label">Vitesse</span>
-            <span id="speed">0.0<small>km/h</small></span>
+    <div id="auth-section">
+        <div class="glass" style="width: 340px; text-align: center;">
+            <h1 style="margin:0 0 20px;">STARTGO<span style="color:var(--accent)">.</span></h1>
+            <div id="signup-box" style="display:none;">
+                <input type="text" id="name" placeholder="Prénom Nom">
+                <select id="role"><option value="athlete">Athlète</option><option value="coach">Coach</option></select>
+            </div>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Mot de passe">
+            <button onclick="authAction()">VALIDER</button>
+            <p onclick="document.getElementById('signup-box').style.display='block'; this.style.display='none'" style="font-size:0.8rem; cursor:pointer; color:gray;">Nouveau ? Créer un compte</p>
         </div>
     </div>
 
-    <div class="controls">
-        <div class="config-row">
-            <div class="config-label"><span>Distance</span><span><b id="d-val">10</b> m</span></div>
-            <input type="range" id="dist" min="5" max="100" value="10" oninput="document.getElementById('d-val').innerText=this.value">
+    <div id="athlete-view">
+        <div class="glass" id="link-panel" style="margin-bottom:20px;">
+            <p style="text-align:center; font-weight:700;">Lier à un Coach</p>
+            <input type="text" id="inv-code" placeholder="CODE" style="text-align:center; font-size:1.2rem;">
+            <button class="btn-accent" onclick="linkToCoach()">ACTIVER LA LIAISON</button>
         </div>
-        <div class="config-row">
-            <div class="config-label"><span>Attente fixe (sec)</span><span><b id="w-val">3</b> s</span></div>
-            <input type="range" id="wait" min="1" max="10" value="3" oninput="document.getElementById('w-val').innerText=this.value">
+        <div class="glass" style="text-align:center; padding:40px 0;">
+            <div id="timer" style="font-size:6rem; font-weight:900;">0.00</div>
+            <p style="color:gray;">secondes</p>
         </div>
-        <button id="mainBtn" onclick="prepareSession()">Lancer</button>
+        <button onclick="startRun()" id="goBtn" style="margin-top:20px; padding:25px; font-size:1.2rem;">DÉMARRER</button>
+        <button onclick="forceFinish()" style="background:#e2e8f0; color:#475569; margin-top:10px;">SIMULER CAPTEUR</button>
+        <button onclick="auth.signOut().then(()=>location.reload())" style="background:none; color:gray; font-size:0.8rem;">Déconnexion</button>
     </div>
 
-    <div class="history" id="history">
-        <div class="label" style="margin-bottom: 15px;">Dernières Sessions</div>
+    <div id="coach-view">
+        <div class="sidebar">
+            <h2 style="font-weight:900;">STARTGO<span style="color:var(--accent)">.</span></h2>
+            <p style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase; letter-spacing:1px;">Mes Athlètes</p>
+            <div id="list-container"></div>
+            <button onclick="auth.signOut().then(()=>location.reload())" style="margin-top:auto; background:#f1f5f9; color:#475569;">Quitter</button>
+        </div>
+        <div class="main">
+            <div class="glass" style="margin-bottom:25px; display:flex; justify-content:space-between; align-items:center;">
+                <div><h1 style="margin:0;">Dashboard</h1><p id="c-uid" style="font-size:0.6rem; color:gray;"></p></div>
+                <button onclick="genPairCode()" class="btn-accent" style="width:auto;">Générer Code</button>
+            </div>
+            <div id="code-box" style="display:none; text-align:center; margin-bottom:20px; font-size:2rem; font-weight:900; color:var(--accent);"></div>
+            
+            <div id="stats-panel" class="glass" style="display:none;">
+                <h2 id="active-name">Performance</h2>
+                <div style="height:300px;"><canvas id="perfChart"></canvas></div>
+                <div id="history-box" style="margin-top:25px; border-top:1px solid #eee; padding-top:20px;"></div>
+            </div>
+        </div>
     </div>
 
     <script>
-        let state = "IDLE", startTime, timer, reactionTime;
-        const audio = new (window.AudioContext || window.webkitAudioContext)();
-
-        // Chargement des cookies au démarrage
-        window.onload = () => {
-            const saved = document.cookie.split('; ').find(row => row.startsWith('history='));
-            if (saved) {
-                const data = JSON.parse(decodeURIComponent(saved.split('=')[1]));
-                data.forEach(item => displayHistory(item));
-            }
+        const config = {
+            apiKey: "AIzaSyDKvUUqhl9xIBFVuBDT35rbjkFxBxWX5ZU",
+            authDomain: "startgo-project.firebaseapp.com",
+            projectId: "startgo-project",
+            storageBucket: "startgo-project.firebasestorage.app",
+            messagingSenderId: "920233789220",
+            appId: "1:920233789220:web:9f8a8d9fd3a3add39a55b1"
         };
+        firebase.initializeApp(config);
+        const auth = firebase.auth(), db = firebase.firestore();
+        let myChart = null, runTimer, startTime;
 
-        function beep(f, d) {
-            const o = audio.createOscillator(), g = audio.createGain();
-            o.connect(g); g.connect(audio.destination);
-            o.frequency.value = f; o.start(); setTimeout(() => o.stop(), d);
+        // AUTH
+        async function authAction() {
+            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+            const isReg = document.getElementById('signup-box').style.display === 'block';
+            try {
+                if(isReg) {
+                    const r = await auth.createUserWithEmailAndPassword(e, p);
+                    await db.collection('users').doc(r.user.uid).set({
+                        uid: r.user.uid, name: document.getElementById('name').value,
+                        role: document.getElementById('role').value, email: e
+                    });
+                } else await auth.signInWithEmailAndPassword(e, p);
+            } catch(err) { alert(err.message); }
         }
 
-        function prepareSession() {
-            state = "WAITING";
-            document.getElementById('status').innerText = "Attention...";
-            document.getElementById('mainBtn').disabled = true;
-            
-            const fixedWait = parseInt(document.getElementById('wait').value) * 1000;
-            const randomWait = Math.random() * 20000; // Aléatoire entre 0 et 20s
-            
-            setTimeout(() => {
-                if(state !== "WAITING") return;
-                beep(880, 500); // Bip unique
-                startTime = performance.now();
-                state = "RUNNING";
-                document.getElementById('status').innerText = "Partez !";
-                timer = setInterval(() => {
-                    const now = (performance.now() - startTime) / 1000;
-                    document.getElementById('time').innerText = now.toFixed(2);
-                    // Actualisation vitesse en temps réel (fictive tant qu'en course)
-                    const dist = document.getElementById('dist').value;
-                    document.getElementById('speed').innerText = ((dist/now)*3.6).toFixed(1);
-                }, 40);
-            }, fixedWait + randomWait);
-        }
-
-        // Simulation capteurs pour le test
-        window.addEventListener('keydown', (e) => {
-            if (state !== "RUNNING") return;
-            if (e.code === "Space") triggerFinish();
-            if (e.code === "KeyR") {
-                reactionTime = (performance.now() - startTime) / 1000;
-                document.getElementById('react').innerText = reactionTime.toFixed(2) + "s";
+        auth.onAuthStateChanged(async u => {
+            if(!u) return;
+            document.getElementById('auth-section').style.display = 'none';
+            const data = (await db.collection('users').doc(u.uid).get()).data();
+            if(data.role === 'coach') {
+                document.getElementById('coach-view').style.display = 'grid';
+                document.getElementById('c-uid').innerText = "ID: " + u.uid;
+                initCoach(u.uid);
+            } else {
+                document.getElementById('athlete-view').style.display = 'block';
+                if(data.coachId) document.getElementById('link-panel').style.display = 'none';
             }
         });
 
-        // Fonctions pour les boutons de simulation à l'écran
-        function triggerFoot() {
-            if (state === "RUNNING") {
-                reactionTime = (performance.now() - startTime) / 1000;
-                document.getElementById('react').innerText = reactionTime.toFixed(2) + "s";
-            }
+        // ATHLÈTE
+        async function linkToCoach() {
+            const code = document.getElementById('inv-code').value.toUpperCase();
+            const snap = await db.collection('pairing_codes').doc(code).get();
+            if(snap.exists) {
+                await db.collection('users').doc(auth.currentUser.uid).update({ coachId: snap.data().coachId });
+                alert("Liaison réussie !"); location.reload();
+            } else alert("Code erroné");
         }
 
-        function triggerFinish() {
-            if (state === "RUNNING") {
-                clearInterval(timer);
-                state = "IDLE";
-                const total = parseFloat(document.getElementById('time').innerText);
-                const kmh = document.getElementById('speed').innerText;
-                const name = document.getElementById('sessionName').value;
-                const now = new Date();
+        function startRun() {
+            document.getElementById('goBtn').innerText = "ATTENTE...";
+            setTimeout(() => {
+                startTime = performance.now();
+                document.getElementById('goBtn').innerText = "RUN !";
+                runTimer = setInterval(() => {
+                    document.getElementById('timer').innerText = ((performance.now() - startTime) / 1000).toFixed(2);
+                }, 40);
+            }, 2000 + Math.random() * 3000);
+        }
+
+        async function forceFinish() {
+            clearInterval(runTimer);
+            const u = auth.currentUser;
+            const profile = (await db.collection('users').doc(u.uid).get()).data();
+            if(!profile.coachId) return alert("ERREUR: Tu n'as pas de coach lié !");
+            
+            await db.collection('sessions').add({
+                athleteId: u.uid, athleteName: profile.name, coachId: profile.coachId,
+                time: document.getElementById('timer').innerText, date: firebase.firestore.Timestamp.now()
+            });
+            alert("Temps envoyé au coach.");
+            document.getElementById('goBtn').innerText = "DÉMARRER";
+        }
+
+        // COACH
+        async function genPairCode() {
+            const c = Math.random().toString(36).substring(2,6).toUpperCase();
+            await db.collection('pairing_codes').doc(c).set({ coachId: auth.currentUser.uid });
+            const box = document.getElementById('code-box');
+            box.innerText = "CODE: " + c; box.style.display = 'block';
+        }
+
+        function initCoach(id) {
+            db.collection('users').where('coachId', '==', id).onSnapshot(s => {
+                const list = document.getElementById('list-container');
+                list.innerHTML = "";
+                s.forEach(doc => {
+                    const a = doc.data();
+                    const d = document.createElement('div');
+                    d.className = "ath-item"; d.innerText = a.name;
+                    d.onclick = () => loadStats(a);
+                    list.appendChild(d);
+                });
+            });
+        }
+
+        function loadStats(a) {
+            document.getElementById('stats-panel').style.display = 'block';
+            document.getElementById('active-name').innerText = a.name;
+            // On récupère TOUTES les sessions de cet athlète
+            db.collection('sessions').where('athleteId', '==', a.uid).onSnapshot(s => {
+                let data = [];
+                s.forEach(doc => data.push(doc.data()));
                 
-                const session = {
-                    name: name,
-                    time: total,
-                    speed: kmh,
-                    date: now.toLocaleDateString(),
-                    hour: now.getHours() + ":" + now.getMinutes()
-                };
+                // Tri manuel par date (du plus ancien au plus récent pour le graph)
+                data.sort((x, y) => x.date.seconds - y.date.seconds);
+
+                const labels = [], values = [];
+                const hBox = document.getElementById('history-box');
+                hBox.innerHTML = "";
                 
-                saveToCookie(session);
-                displayHistory(session);
-                resetUI();
-            }
+                data.forEach(item => {
+                    const dStr = item.date.toDate().toLocaleDateString();
+                    labels.push(dStr);
+                    values.push(parseFloat(item.time));
+                    // Pour la liste, on met le plus récent en haut
+                    hBox.insertAdjacentHTML('afterbegin', `<div class="card"><b>${item.time}s</b> <span>${dStr}</span></div>`);
+                });
+                renderChart(labels, values);
+            });
         }
 
-        function resetUI() {
-            document.getElementById('status').innerText = "Terminé";
-            document.getElementById('mainBtn').disabled = false;
-        }
-
-        function saveToCookie(session) {
-            let history = [];
-            const saved = document.cookie.split('; ').find(row => row.startsWith('history='));
-            if (saved) history = JSON.parse(decodeURIComponent(saved.split('=')[1]));
-            history.unshift(session);
-            document.cookie = `history=${encodeURIComponent(JSON.stringify(history.slice(0, 10)))}; max-age=31536000; path=/`;
-        }
-
-        function displayHistory(s) {
-            const h = document.getElementById('history');
-            const item = document.createElement('div');
-            item.className = 'history-item';
-            item.innerHTML = `
-                <div><div class="h-name">${s.name}</div><div class="h-meta">${s.date} à ${s.hour}</div></div>
-                <div class="h-val">${s.time}s</div>
-                <div class="h-val" style="color:var(--accent)">${s.speed}</div>
-            `;
-            h.insertBefore(item, h.childNodes[2]);
+        function renderChart(l, v) {
+            const ctx = document.getElementById('perfChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: l, datasets: [{ label: 'Temps (s)', data: v, borderColor: '#ff4757', backgroundColor: 'rgba(255, 71, 87, 0.1)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true } } }
+            });
         }
     </script>
-
-    <div style="padding: 10px; display: flex; gap: 10px; opacity: 0.3;">
-        <button onclick="triggerFoot()" style="font-size: 0.6rem; padding: 5px;">SIMU DÉCOLLAGE</button>
-        <button onclick="triggerFinish()" style="font-size: 0.6rem; padding: 5px;">SIMU ARRIVÉE</button>
-    </div>
 </body>
 </html>
