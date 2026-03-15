@@ -628,7 +628,7 @@ input[type=range]{width:100%;accent-color:var(--blue);}
       <div class="ph"><div class="ph-title">Entraînement</div><div class="ph-sub">Chronométrie de précision</div></div>
       <div id="trcfg" class="card glass">
         <div class="ctitle">Configuration</div>
-        <div class="sl-wrap"><div class="sl-row"><span>Concentration</span><span class="sl-val" id="sv-c">3 s</span></div><input type="range" id="slc" min="1" max="10" value="3" oninput="document.getElementById('sv-c').textContent=this.value+' s'"></div>
+        <div class="sl-wrap"><div class="sl-row"><span>Mise en position</span><span class="sl-val" id="sv-c">3 s</span></div><input type="range" id="slc" min="1" max="10" value="3" oninput="document.getElementById('sv-c').textContent=this.value+' s'"></div>
         <div class="sl-wrap"><div class="sl-row"><span>Distance</span><span class="sl-val" id="sv-d">10 m</span></div><input type="range" id="sld" min="5" max="500" value="10" oninput="document.getElementById('sv-d').textContent=this.value+' m'"></div>
         <div class="sl-wrap" id="alea-wrap" style="display:none">
           <div class="sl-row"><span>Délai aléatoire min</span><span class="sl-val" id="sv-amin">1 s</span></div>
@@ -1086,8 +1086,8 @@ const BLE = {
       return;
     }
 
-    if (msg === 'PHASE:WAIT') { setSP('WAIT', 'Concentration...'); return; }
-    if (msg === 'PHASE:ALEA') { setSP('ALEA', 'Prêt...'); return; }
+    if (msg === 'PHASE:WAIT') { setSP('WAIT', 'Mise en position...'); return; }
+    if (msg === 'PHASE:ALEA') { setSP('ALEA', 'Prêt !'); return; }
 
     // BIP:<timestamp>  — L'ESP32 a joué le son, on démarre le chrono JS
     if (msg.startsWith('BIP:')) {
@@ -1221,7 +1221,7 @@ async function startSeq() {
   if (BLE.connected) {
     /* ── MODE PHYSIQUE — ESP32 gère la séquence et les sons ── */
     tSt = 'WAIT';
-    setSP('WAIT', 'Envoi vers ESP32...');
+    setSP('WAIT', 'Mise en position...');
     const concMs  = parseInt(document.getElementById('slc').value) * 1000;
     const aleaMin  = parseInt(document.getElementById('sl-amin')?.value || 1) * 1000;
     const aleaMax  = parseInt(document.getElementById('sl-amax')?.value || 3) * 1000;
@@ -1231,11 +1231,11 @@ async function startSeq() {
   } else {
     /* ── MODE SIMULATION — séquence JS + sons Web Audio ─── */
     tSt = 'WAIT';
-    setSP('WAIT', 'Concentration...');
+    setSP('WAIT', 'Mise en position...');
     const conc = parseInt(document.getElementById('slc').value) * 1000;
     setTimeout(() => {
       if (tSt !== 'WAIT') return;
-      tSt = 'ALEA'; setSP('ALEA', 'Prêt...');
+      tSt = 'ALEA'; setSP('ALEA', 'Prêt !');
       setTimeout(() => {
         if (tSt !== 'ALEA') return;
         playBip();
